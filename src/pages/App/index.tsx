@@ -6,7 +6,7 @@ import { Graphics } from "pixi.js";
 import Player from "../../source/player";
 import Box from "../../source/box";
 import Wall from "../../source/wall";
-import Hit from "../../source/hit";
+import Point from "../../source/point";
 import stageConfig from "../../stage/1.json";
 
 export const WIDTH = 640;
@@ -50,32 +50,33 @@ const App: React.FC = () => {
   function checkNextStep(direction: ReactDirection) {
     //
     const [x, y] = playerInfo;
-    console.log(">>mapInfo>>", mapInfo);
     const [nextX, nextY] = nextPosition(direction, x, y);
-    const isWall = mapInfo[nextX][nextY]?.type === "wall";
-    const isBox = mapInfo[nextX][nextY]?.type === "box";
+    const nextType = mapInfo[nextX][nextY]?.type;
+    const isWall = nextType === "wall";
+    const isBox = ['box', 'hit'].includes(nextType)
     isBox && console.log("需要移动的位置是箱子");
     isWall && console.log("需要移动的位置是墙");
     if (isBox) {
       const [boxNextX, boxNextY] = nextPosition(direction, nextX, nextY);
-      const isBoxNextWall = mapInfo[boxNextX][boxNextY]?.type === "wall";
-      const isBoxNextHit = mapInfo[boxNextX][boxNextY]?.type === "hit";
-      const isBoxLeaveHit = mapInfo[nextX][nextY]?.type === "hit";
+      const boxNextType = mapInfo[boxNextX][boxNextY]?.type;
+      const isBoxNextWall = ["wall", "box", "hit"].includes(boxNextType);
+      isBoxNextWall && console.log("推不动箱子，箱子对面是墙或者箱子");
+      const isBoxNextHit = boxNextType === "point";
+      const isBoxLeaveHit = nextType === "hit";
       let hitWeight = 0;
       if (isBoxNextHit) hitWeight++;
       if (isBoxLeaveHit) hitWeight--;
-      isBoxNextWall && console.log("推不动箱子，箱子对面是墙");
       if (isBoxNextWall) {
         return false;
       } else {
         console.log("推动箱子");
-        setHitCount(hitCount + hitWeight);
         const neoMapInfo = mapInfo;
         const boxEle = neoMapInfo[nextX][nextY].element;
         neoMapInfo[boxNextX][boxNextY] = {
-          type: "box",
+          type: isBoxNextHit ? "hit" : "box",
           element: boxEle,
         };
+        setHitCount(hitCount + hitWeight);
         neoMapInfo[nextX][nextY] = {
           type: "player",
           element: playerRef.current,
@@ -116,8 +117,8 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    setIsVictory(hitCount === stageConfig.hit.length);
-  }, [hitCount])
+    setIsVictory(hitCount === stageConfig.point.length);
+  }, [hitCount]);
 
   // 初始化程序
   useEffect(() => {
@@ -153,7 +154,7 @@ const App: React.FC = () => {
       mapInfo[i] = new Array(HEIGHT / STEP_SIZE - 1);
     }
     // 资源初始化
-    const { box, wall, hit, player } = stageConfig;
+    const { box, wall, point, player } = stageConfig;
     box.forEach((boxPosition) => {
       const [x, y] = boxPosition;
       const box = Box(x, y);
@@ -172,13 +173,13 @@ const App: React.FC = () => {
         element: wall,
       };
     });
-    hit.forEach((hitPosition) => {
-      const [x, y] = hitPosition;
-      const hit = Hit(x, y);
-      app.stage.addChild(hit);
+    point.forEach((pointPosition) => {
+      const [x, y] = pointPosition;
+      const point = Point(x, y);
+      app.stage.addChild(point);
       mapInfo[x][y] = {
-        type: "hit",
-        element: hit,
+        type: "point",
+        element: point,
       };
     });
     setPlayerInfo([player[0], player[1]]);
@@ -195,7 +196,10 @@ const App: React.FC = () => {
   return (
     <>
       <div ref={containerRef}></div>
-      <span>状态: {`${hitCount}/${stageConfig.hit.length}`}({isVictory ? "胜利" : ""})</span>
+      <span>
+        状态: {`${hitCount}/${stageConfig.point.length}`}(
+        {isVictory ? "胜利" : ""})
+      </span>
     </>
   );
 };
