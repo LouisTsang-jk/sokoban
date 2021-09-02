@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import { STEP_SIZE } from "../../pages/App/index";
 function Player(x: number, y: number) {
-  const player = new PIXI.Text("玩家", {
+  const player = new PIXI.Text("👨", {
     fontSize: 12,
     fill: "#fff",
   });

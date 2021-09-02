@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import { STEP_SIZE } from "../../pages/App/index";
 function Point(x: number, y: number) {
-  const point = new PIXI.Text("目标点", {
+  const point = new PIXI.Text("⭕️", {
     fontSize: 12,
     fill: "#fff",
   });

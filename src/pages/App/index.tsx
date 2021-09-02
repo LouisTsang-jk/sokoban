@@ -8,10 +8,12 @@ import Box from "../../source/box";
 import Wall from "../../source/wall";
 import Point from "../../source/point";
 import stageConfig from "../../stage/1.json";
+import TWEEN from "@tweenjs/tween.js";
 
 export const WIDTH = 640;
 export const HEIGHT = 640;
 export const STEP_SIZE = 64;
+export const ANIMATION_DURING = 80;
 
 enum EnumMapType {
   player = "玩家",
@@ -53,7 +55,7 @@ const App: React.FC = () => {
     const [nextX, nextY] = nextPosition(direction, x, y);
     const nextType = mapInfo[nextX][nextY]?.type;
     const isWall = nextType === "wall";
-    const isBox = ['box', 'hit'].includes(nextType)
+    const isBox = ["box", "hit"].includes(nextType);
     isBox && console.log("需要移动的位置是箱子");
     isWall && console.log("需要移动的位置是墙");
     if (isBox) {
@@ -92,28 +94,64 @@ const App: React.FC = () => {
     return canMove;
   }
 
+  function animate(time: number) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+  }
+
   useKeyPress("ArrowUp", () => {
+    // if (checkNextStep("up") && playerRef.current) {
+    //   playerRef.current.y -= STEP_SIZE;
+    // }
     if (checkNextStep("up") && playerRef.current) {
-      playerRef.current.y -= STEP_SIZE;
+      const coords = { y: playerRef.current.y };
+      new TWEEN.Tween(coords)
+        .to({ y: playerRef.current.y - STEP_SIZE }, ANIMATION_DURING)
+        .onUpdate(() => {
+          if (playerRef.current) playerRef.current.y = coords.y;
+        })
+        .start();
+      requestAnimationFrame(animate);
     }
   });
 
   useKeyPress("ArrowDown", () => {
-    checkNextStep("down") &&
-      playerRef.current &&
-      (playerRef.current.y += STEP_SIZE);
+    if (checkNextStep("down") && playerRef.current) {
+      const coords = { y: playerRef.current.y };
+      new TWEEN.Tween(coords)
+        .to({ y: playerRef.current.y + STEP_SIZE }, ANIMATION_DURING)
+        .onUpdate(() => {
+          if (playerRef.current) playerRef.current.y = coords.y;
+        })
+        .start();
+      requestAnimationFrame(animate);
+    }
   });
 
   useKeyPress("ArrowLeft", () => {
-    checkNextStep("left") &&
-      playerRef.current &&
-      (playerRef.current.x -= STEP_SIZE);
+    if (checkNextStep("left") && playerRef.current) {
+      const coords = { x: playerRef.current.x };
+      new TWEEN.Tween(coords)
+        .to({ x: playerRef.current.x - STEP_SIZE }, ANIMATION_DURING)
+        .onUpdate(() => {
+          if (playerRef.current) playerRef.current.x = coords.x;
+        })
+        .start();
+      requestAnimationFrame(animate);
+    }
   });
 
   useKeyPress("ArrowRight", () => {
-    checkNextStep("right") &&
-      playerRef.current &&
-      (playerRef.current.x += STEP_SIZE);
+    if (checkNextStep("right") && playerRef.current) {
+      const coords = { x: playerRef.current.x };
+      new TWEEN.Tween(coords)
+        .to({ x: playerRef.current.x + STEP_SIZE }, ANIMATION_DURING)
+        .onUpdate(() => {
+          if (playerRef.current) playerRef.current.x = coords.x;
+        })
+        .start();
+      requestAnimationFrame(animate);
+    }
   });
 
   useEffect(() => {
@@ -191,7 +229,13 @@ const App: React.FC = () => {
     };
     app.stage.addChild(playerRef.current);
     setMapInfo(mapInfo);
+    // gameLoop();
   }, []);
+
+  function gameLoop() {
+    requestAnimationFrame(gameLoop);
+    console.log("game loop");
+  }
 
   return (
     <>

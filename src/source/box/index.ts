@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import { STEP_SIZE } from "../../pages/App/index";
 function Box(x: number, y: number) {
-  const box = new PIXI.Text("箱子", {
+  const box = new PIXI.Text("📦", {
     fontSize: 12,
     fill: "#fff",
   });
